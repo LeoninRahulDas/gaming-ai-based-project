@@ -37,13 +37,13 @@ pipeline
             }
         }
 
-        stage(docker build)
+        stage('docker build')
         {
             steps{
-            sh '''
-               echo 'building a docker images'
-               docker build -t projai:${BUILD_NUMBER} .
-               '''
+                sh """
+                    echo 'Building a docker image'
+                    docker build -t myapp:${BUILD_NUMBER}
+                   """
             }
         }
     }
