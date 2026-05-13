@@ -42,7 +42,7 @@ pipeline
             steps{
                 sh """
                     echo 'Building a docker image'
-                    docker build -t myapp:${BUILD_NUMBER}
+                    docker build -t myapp:${BUILD_NUMBER} .
                    """
             }
         }
