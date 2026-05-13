@@ -36,5 +36,15 @@ pipeline
                   '''
             }
         }
+
+        stage(docker build)
+        {
+            steps{
+            sh '''
+               echo 'building a docker images'
+               docker build -t projai:${BUILD_NUMBER} .
+               '''
+            }
+        }
     }
 }
