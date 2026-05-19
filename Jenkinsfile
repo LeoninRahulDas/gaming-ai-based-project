@@ -1,66 +1,77 @@
-pipeline
-{
+pipeline {
     agent any
 
-    tools{
+    tools {
         maven 'maven'
         jdk 'java'
     }
 
-    environment{
-            IMAGE_NAME = "leorahuldas/devsecops:${GIT_COMMIT}"
+    environment {
+        IMAGE_NAME = "leorahuldas/devsecops:${GIT_COMMIT}"
     }
 
-    stages{
+    stages {
 
-        stage('git-checkout')
-        {
-            steps{
+        stage('git-checkout') {
+            steps {
                 git url: 'https://github.com/LeoninRahulDas/gaming-ai-based-project.git',
-                branch : 'master'
+                    branch: 'master'
             }
         }
 
-        stage('compile')
-        {
-            steps{
+        stage('compile') {
+            steps {
                 sh '''
-                   echo 'compiling the code'
-                   mvn compile
+                    echo 'Compiling the code'
+                    mvn compile
                 '''
             }
         }
 
-        stage('build')
-        {
-            steps{
+        stage('build') {
+            steps {
                 sh '''
-                   echo 'Build the code'
-                   mvn package
-                  '''
+                    echo 'Building the code'
+                    mvn package
+                '''
             }
         }
 
-        stage('docker build')
-        {
-            steps{
+        stage('docker build') {
+            steps {
                 sh """
-                    echo 'Building a docker image'
-                    docker build -t myapp:${BUILD_NUMBER} .
-                   """
+                    echo 'Building Docker image'
+                    docker build -t ${IMAGE_NAME} .
+                """
             }
         }
 
-        stage('docker login')
-        {
-            steps{
+        stage('docker login') {
+            steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')])
-                    sh '''
-                        echo 'Docker login'
-                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                    '''
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub-creds',
+                            passwordVariable: 'DOCKER_PASSWORD',
+                            usernameVariable: 'DOCKER_USERNAME'
+                        )
+                    ]) {
+
+                        sh '''
+                            echo 'Docker login'
+                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        '''
+                    }
                 }
+            }
+        }
+
+        stage('docker push') {
+            steps {
+                sh """
+                    echo 'Pushing Docker image'
+                    docker push ${IMAGE_NAME}
+                """
             }
         }
     }
