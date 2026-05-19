@@ -7,6 +7,10 @@ pipeline
         jdk 'java'
     }
 
+    environment{
+            IMAGE_NAME = "leorahuldas/devsecops:${GIT_COMMIT}"
+    }
+
     stages{
 
         stage('git-checkout')
@@ -44,6 +48,19 @@ pipeline
                     echo 'Building a docker image'
                     docker build -t myapp:${BUILD_NUMBER} .
                    """
+            }
+        }
+
+        stage('docker login')
+        {
+            steps{
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')])
+                    sh '''
+                        echo 'Docker login'
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                    '''
+                }
             }
         }
     }
